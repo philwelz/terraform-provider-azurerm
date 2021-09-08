@@ -3,9 +3,9 @@ package iothub_test
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/iothub/parse"
 	"testing"
 
-	"github.com/hashicorp/terraform-provider-azurerm/helpers/azure"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance/check"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
@@ -82,18 +82,18 @@ func TestAccIotHubConsumerGroup_withSharedAccessPolicy(t *testing.T) {
 }
 
 func (t IotHubConsumerGroupResource) Exists(ctx context.Context, clients *clients.Client, state *pluginsdk.InstanceState) (*bool, error) {
-	id, err := azure.ParseAzureResourceID(state.ID)
+	id, err := parse.ConsumerGroupID(state.ID)
 	if err != nil {
 		return nil, err
 	}
 	resourceGroup := id.ResourceGroup
-	iotHubName := id.Path["IotHubs"]
-	endpointName := id.Path["eventHubEndpoints"]
-	name := id.Path["ConsumerGroups"]
+	iotHubName := id.IotHubName
+	endpointName := id.EventHubEndpointName
+	name := id.Name
 
 	resp, err := clients.IoTHub.ResourceClient.GetEventHubConsumerGroup(ctx, resourceGroup, iotHubName, endpointName, name)
 	if err != nil {
-		return nil, fmt.Errorf("reading IotHuB Consumer Group (%s): %+v", id, err)
+		return nil, fmt.Errorf("reading IotHuB Consumer Group (%s): %+v", id.String(), err)
 	}
 
 	return utils.Bool(resp.ID != nil), nil
