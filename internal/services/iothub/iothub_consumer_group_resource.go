@@ -22,7 +22,11 @@ func resourceIotHubConsumerGroup() *pluginsdk.Resource {
 		Read:   resourceIotHubConsumerGroupRead,
 		Delete: resourceIotHubConsumerGroupDelete,
 		// TODO: replace this with an importer which validates the ID during import
-		Importer: pluginsdk.DefaultImporter(),
+		//Importer: pluginsdk.DefaultImporter(),
+		Importer: pluginsdk.ImporterValidatingResourceId(func(id string) error {
+			_, err := parse.ConsumerGroupID(id)
+			return err
+		}),
 
 		Timeouts: &pluginsdk.ResourceTimeout{
 			Create: pluginsdk.DefaultTimeout(30 * time.Minute),
@@ -73,7 +77,7 @@ func resourceIotHubConsumerGroupCreate(d *pluginsdk.ResourceData, meta interface
 		existing, err := client.GetEventHubConsumerGroup(ctx, id.ResourceGroup, id.IotHubName, id.EventHubEndpointName, id.Name)
 		if err != nil {
 			if !utils.ResponseWasNotFound(existing.Response) {
-				return fmt.Errorf("checking for presence of existing Consumer Group %s: %+v", id.String(), err)
+				return fmt.Errorf("checking for presence of existing %s: %+v", id.String(), err)
 			}
 		}
 
